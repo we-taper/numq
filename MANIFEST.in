@@ -1,0 +1,2 @@
+include versioneer.py
+include src/numq/_version.py
