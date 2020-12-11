@@ -10,9 +10,8 @@ setup(
     name="numq",
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
-    packages=find_packages(
-        include=("src/numq.*")
-    ),
+    package_dir={'numq': 'src/'},
+    packages=find_packages(where='numq'),
     # metadata to display on PyPI
     author="Hongxiang Chen",
     author_email="h.chen.17@ucl.ac.uk",

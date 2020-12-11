@@ -13,9 +13,9 @@ def register(name, module):
     _registered_mods[name] = module
 
 
-register("numpy", "mlec.q_toolkit.numpy_impl")
-register("cupy", "mlec.q_toolkit.cupy_impl")
-register("tf", "mlec.q_toolkit.tf_impl")
+register("numpy", "numq.numpy_impl")
+register("cupy", "numq.cupy_impl")
+register("tf", "numq.tf_impl")
 
 
 def get_implementation_module(name):
