@@ -19,27 +19,39 @@ then the error provided by the default function (declared here) is raised.
 from functools import singledispatch
 from typing import Iterable, List
 
-__all__ = ['apply_isometry_to_density_matrices',
-           'apply_kraus_ops_to_density_matrices',
-           'apply_unitary_transformation_to_density_matrices',
-           'commutator',
-           'dagger', 'distance',
-           'equiv',
-           'format_wavefunction',
-           'get_random_ru', 'get_random_wf',
-           'rand_rho', 'rand_herm',
-           'kron_each',
-           'load1qb_into_ithqb',
-           'load_state_into_mqb_start_from_lqb', 'load_states_into',
-           '_load_states_into',
-           'make_density_matrix',
-           'partial_trace', 'partial_trace_1d',
-           'partial_trace_wf', 'partial_trace_wf_keep_first',
-           'pure_state_overlap',
-           'trace_distance', 'trace_distance_1qb', 'trace_distance_using_svd']
+__all__ = [
+    "apply_isometry_to_density_matrices",
+    "apply_kraus_ops_to_density_matrices",
+    "apply_unitary_transformation_to_density_matrices",
+    "commutator",
+    "dagger",
+    "distance",
+    "equiv",
+    "format_wavefunction",
+    "get_random_ru",
+    "get_random_wf",
+    "rand_rho",
+    "rand_herm",
+    "kron_each",
+    "load1qb_into_ithqb",
+    "load_state_into_mqb_start_from_lqb",
+    "load_states_into",
+    "_load_states_into",
+    "make_density_matrix",
+    "partial_trace",
+    "partial_trace_1d",
+    "partial_trace_wf",
+    "partial_trace_wf_keep_first",
+    "pure_state_overlap",
+    "trace_distance",
+    "trace_distance_1qb",
+    "trace_distance_using_svd",
+]
 
-_ERROR_MSG = "There is not implementation registered for {type}." \
-             "Please ensure you have loaded the corresponding module first."
+_ERROR_MSG = (
+    "There is not implementation registered for {type}."
+    "Please ensure you have loaded the corresponding module first."
+)
 
 
 def _get_error_message(*args):
@@ -83,12 +95,11 @@ def equiv(mat1, mat2, **allclose_args):
 
 
 @singledispatch
-def format_wavefunction(wf, precision=8, skip_zeros=False,
-                        reverse_qubitstr=False):
+def format_wavefunction(wf, precision=8, skip_zeros=False, reverse_qubitstr=False):
     """Prints the components of the wavefunction visually.
-     The argument reverse_qubitstr will reverse the sting representation of qubit's basis.
-     For example, wf[1] will go from the |01> basis to the |10> basis.
-     """
+    The argument reverse_qubitstr will reverse the sting representation of qubit's basis.
+    For example, wf[1] will go from the |01> basis to the |10> basis.
+    """
     raise NotImplementedError(_get_error_message(wf))
 
 
@@ -139,7 +150,7 @@ def get_randu(np, nqb):
     dim = 2 ** nqb
     x = randn(dim, dim) + 1j * randn(dim, dim)
     x /= np.sqrt(2)
-    q, r = np.linalg.qr(x, mode='complete')
+    q, r = np.linalg.qr(x, mode="complete")
     diag_r = diag(r)
     r = diag(diag_r / np.abs(diag_r))
     return q.dot(r)
@@ -161,7 +172,7 @@ def rand_herm(np, nqb=None, dim=None):
     """
     if nqb is None:
         if not isinstance(dim, int):
-            raise ValueError(f'Wrong parameters: nqb={nqb}, dim={dim}')
+            raise ValueError(f"Wrong parameters: nqb={nqb}, dim={dim}")
     else:
         dim = 2 ** nqb
     randn = np.random.randn
@@ -184,8 +195,7 @@ def kron_each(wf1s, wf2s):
 
 @singledispatch
 def load1qb_into_ithqb(iwf_1qb, target_qbidx: int, numphyqb: int):
-    raise NotImplementedError(
-        _get_error_message(iwf_1qb, target_qbidx, numphyqb))
+    raise NotImplementedError(_get_error_message(iwf_1qb, target_qbidx, numphyqb))
 
 
 @singledispatch
@@ -205,7 +215,7 @@ def load_states_into(states, total_qb: int, pos: List[int]):
     Loads the input `states` into the positions (`pos`), within a total
     qubits by `total_qb`.
     """
-    assert total_qb > 0, 'Illegal total_qb.'
+    assert total_qb > 0, "Illegal total_qb."
     assert all(0 <= _i < total_qb for _i in pos), "pos outside total_qb"
     assert 2 ** len(pos) == states.shape[0], "Input wf dim >= len(pos)"
     return _load_states_into(states, total_qb, pos)
@@ -261,6 +271,7 @@ def partial_trace_wf_keep_first(iwf, n: int):
 
     Parameters
     ----------
+    iwf
     n : int
         A non-negative integer. When n = 0, this function simply returns a
         shape (1,1) array of value 1.

@@ -6,10 +6,10 @@ from typing import Union
 
 import numpy as np
 
-from .numpy_gates import x, y, z
+from .numpy_gates import x as X, y as Y, z as Z
 
-CartCoord = namedtuple('CartCoord', ['x', 'y', 'z'])
-PolarCoord = namedtuple('PolarCoord', ['r', 'theta', 'phi'])
+CartCoord = namedtuple("CartCoord", ["x", "y", "z"])
+PolarCoord = namedtuple("PolarCoord", ["r", "theta", "phi"])
 
 
 def get_bloch_state(theta, phi):
@@ -20,8 +20,7 @@ def get_bloch_state(theta, phi):
     -------------
     https://en.wikipedia.org/wiki/Bloch_sphere
     """
-    return np.array(
-        [np.cos(theta / 2.0), np.sin(theta / 2.0) * np.exp(1j * phi)])
+    return np.array([np.cos(theta / 2.0), np.sin(theta / 2.0) * np.exp(1j * phi)])
 
 
 def polar_to_cartesian(r=None, theta=None, phi=None, polar: PolarCoord = None):
@@ -73,18 +72,17 @@ def bloch_denmatt(coord: Union[CartCoord, PolarCoord]):
     if isinstance(coord, PolarCoord):
         coord = polar_to_cartesian(polar=coord)
     if isinstance(coord, CartCoord):
-        return (np.eye(2) + coord.x * x + coord.y * y + coord.z * z) * 0.5
+        return (np.eye(2) + coord.x * X + coord.y * Y + coord.z * Z) * 0.5
     raise ValueError(type(coord))
 
 
 def coord_of_denmat(rho: np.ndarray, ret_type=CartCoord):
-    """Returns the Cartesian coordinates of a density matrix on a bloch sphere.
-    """
+    """Returns the Cartesian coordinates of a density matrix on a bloch sphere."""
     if rho.shape != (2, 2):
         raise NotImplementedError(rho.shape)
-    x_cor = np.real(np.trace(rho.dot(x)))
-    y_cor = np.real(np.trace(rho.dot(y)))
-    z_cor = np.real(np.trace(rho.dot(z)))
+    x_cor = np.real(np.trace(rho.dot(X)))
+    y_cor = np.real(np.trace(rho.dot(Y)))
+    z_cor = np.real(np.trace(rho.dot(Z)))
     ret = CartCoord(x_cor, y_cor, z_cor)
     if ret_type == CartCoord:
         return ret

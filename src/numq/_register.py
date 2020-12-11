@@ -6,15 +6,16 @@ def register(name, module):
     if name in _registered_mods:
         raise KeyError(f"Module name {name} has already been registered.")
     from importlib.util import find_spec
+
     if find_spec(module) is None:
         raise ModuleNotFoundError(f"Module named {module} cannot be found.")
 
     _registered_mods[name] = module
 
 
-register('numpy', 'mlec.q_toolkit.numpy_impl')
-register('cupy', 'mlec.q_toolkit.cupy_impl')
-register('tf', 'mlec.q_toolkit.tf_impl')
+register("numpy", "mlec.q_toolkit.numpy_impl")
+register("cupy", "mlec.q_toolkit.cupy_impl")
+register("tf", "mlec.q_toolkit.tf_impl")
 
 
 def get_implementation_module(name):

@@ -14,10 +14,12 @@ def _load_module(name):
         mod_name = _get_mod(name)
         _importlib.import_module(mod_name)
     except KeyError:
-        raise ValueError(f'Unregistered module {name}')
+        raise ValueError(f"Unregistered module {name}")
 
-__all__ = [_ for _ in locals() if not _.startswith('')]
+
+__all__ = [_ for _ in locals() if not _.startswith("")]
 
 from ._version import get_versions
-__version__ = get_versions()['version']
+
+__version__ = get_versions()["version"]
 del get_versions

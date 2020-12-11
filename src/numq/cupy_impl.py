@@ -4,17 +4,32 @@ import os
 from math import log2 as math_log2
 
 import cupy
-from cupy import conj, einsum, empty, empty_like, kron, ones, outer, sqrt, \
-    swapaxes, tensordot, \
-    trace, transpose, zeros
-from cupy.cuda.cublas import CUBLASError
-from cupy.cuda.cusolver import CUSOLVERError
+from cupy import (
+    conj,
+    einsum,
+    empty,
+    empty_like,
+    kron,
+    ones,
+    outer,
+    sqrt,
+    swapaxes,
+    tensordot,
+    trace,
+    transpose,
+    zeros,
+)
 from cupy.cuda.memory import OutOfMemoryError
 from cupy.linalg import eigvalsh, svd
 
 from ._base_function import *
-from .cupy_impl_cuda_source.wrapper import default_dtype, \
-    partial_trace_wf_keep_first_cuda
+from .cupy_impl_cuda_source.wrapper import (
+    default_dtype,
+    partial_trace_wf_keep_first_cuda,
+)
+
+CUBLASError = cupy.cuda.cublas.CUBLASError
+CUSOLVERError = cupy.cuda.cusolver.CUSOLVERError
 
 logging.basicConfig()
 logger = logging.getLogger(os.path.basename(__name__))
@@ -42,8 +57,9 @@ except CUSOLVERError as e:
 
 
 @apply_isometry_to_density_matrices.register(cupy.ndarray)
-def apply_isometry_to_density_matrices_cupy(isometry: cupy.ndarray,
-                                            density_matrices: cupy.ndarray):
+def apply_isometry_to_density_matrices_cupy(
+    isometry: cupy.ndarray, density_matrices: cupy.ndarray
+):
     outdim, dim1 = isometry.shape
     num_states, dim2, dim3 = density_matrices.shape
     assert dim1 == dim2 == dim3
@@ -56,8 +72,9 @@ def apply_isometry_to_density_matrices_cupy(isometry: cupy.ndarray,
 
 
 @apply_kraus_ops_to_density_matrices.register(cupy.ndarray)
-def apply_kraus_ops_to_density_matrices_cupy(kraus_ops: cupy.ndarray,
-                                             density_matrices: cupy.ndarray):
+def apply_kraus_ops_to_density_matrices_cupy(
+    kraus_ops: cupy.ndarray, density_matrices: cupy.ndarray
+):
     num_kraus_ops, matrix_dim, matrix_dim2 = kraus_ops.shape
     if matrix_dim != matrix_dim2:
         raise ValueError(kraus_ops.shape)
@@ -65,11 +82,10 @@ def apply_kraus_ops_to_density_matrices_cupy(kraus_ops: cupy.ndarray,
     if den_mat_dim != den_mat_dim2:
         raise ValueError(density_matrices.shape)
     if matrix_dim != den_mat_dim:
-        raise ValueError(
-            '{0:d}, {1:d}'.format(int(matrix_dim), int(den_mat_dim)))
+        raise ValueError("{0:d}, {1:d}".format(int(matrix_dim), int(den_mat_dim)))
     del matrix_dim2, den_mat_dim2, den_mat_dim
 
-    mat_b = einsum('aij,bjk->abik', kraus_ops, density_matrices)
+    mat_b = einsum("aij,bjk->abik", kraus_ops, density_matrices)
     assert mat_b.shape == (num_kraus_ops, num_wfs, matrix_dim, matrix_dim)
     adjoint = empty_like(kraus_ops)
     for idx in range(num_kraus_ops):
@@ -82,7 +98,8 @@ def apply_kraus_ops_to_density_matrices_cupy(kraus_ops: cupy.ndarray,
 
 @apply_unitary_transformation_to_density_matrices.register(cupy.ndarray)
 def apply_unitary_transformation_to_density_matrices_cupy(
-        unitary: cupy.ndarray, density_matrices: cupy.ndarray):
+    unitary: cupy.ndarray, density_matrices: cupy.ndarray
+):
     dim1, dim2 = unitary.shape
     num_states, dim3, dim4 = density_matrices.shape
     assert dim1 == dim2 == dim3 == dim4
@@ -96,6 +113,7 @@ def apply_unitary_transformation_to_density_matrices_cupy(
 @format_wavefunction.register(cupy.ndarray)
 def formwat_wavefunction_cupy(wf, *args, **kwargs):
     from .numpy_impl import format_wavefunction_numpy
+
     wf = wf.get()
     return format_wavefunction_numpy(wf, *args, **kwargs)
 
@@ -104,10 +122,9 @@ def formwat_wavefunction_cupy(wf, *args, **kwargs):
 def kron_each_cupy(wf1s, wf2s):
     nwf = int(wf1s.shape[1])  # int to convert TensorFlow dimension into integer
     if nwf != int(wf2s.shape[1]):
-        raise ValueError('Inconsistent number of input wavefunctions.')
+        raise ValueError("Inconsistent number of input wavefunctions.")
 
-    owfs = empty(shape=(wf1s.shape[0] * wf2s.shape[0], wf1s.shape[1]),
-                 dtype=wf1s.dtype)
+    owfs = empty(shape=(wf1s.shape[0] * wf2s.shape[0], wf1s.shape[1]), dtype=wf1s.dtype)
     for idx in range(wf1s.shape[1]):
         owfs[:, idx] = kron(wf1s[:, idx], wf2s[:, idx])
     return owfs
@@ -150,8 +167,7 @@ def load_state_into_mqb_start_from_lqb_cupy(states, m, l=0) -> cupy.ndarray:
     overall = empty(shape=(big_h_dim, nwf), dtype=dtype)
     for wfidx in range(nwf):
         overall[:, wfidx] = kron(
-            kron(h1states[:, wfidx], states[:, wfidx]),
-            h3states[:, wfidx]
+            kron(h1states[:, wfidx], states[:, wfidx]), h3states[:, wfidx]
         )
     return overall
 
@@ -165,8 +181,10 @@ def make_density_matrix_cupy(wf: cupy.ndarray):
         try:
             ret = empty(shape=(num_wf, wf_dim, wf_dim), dtype=wf.dtype)
         except OutOfMemoryError:
-            logger.critical("OOM when creating density matrix for wavefunction "
-                            f"of shape {wf.shape}")
+            logger.critical(
+                "OOM when creating density matrix for wavefunction "
+                f"of shape {wf.shape}"
+            )
             raise
         for wf_idx in range(num_wf):
             a_wf = wf[:, wf_idx]
@@ -183,23 +201,18 @@ def pure_state_overlap_cupy(wf1: cupy.ndarray, wf2: cupy.ndarray):
     """
     ndim = wf1.ndim
     if ndim != wf2.ndim:
-        raise ValueError(
-            'wf1:{0:s}\nwf2:{1:s}'.format(str(ndim), str(wf2.ndim)))
+        raise ValueError("wf1:{0:s}\nwf2:{1:s}".format(str(ndim), str(wf2.ndim)))
     if ndim == 1:
         return transpose(conj(wf1)).dot(wf2)
     elif ndim == 2:
         wf1 = conj(wf1)
-        return _sum(
-            wf1 * wf2,  # element-wise
-            axis=0
-        )
+        return _sum(wf1 * wf2, axis=0)  # element-wise
     else:
         raise ValueError(str(wf1.shape))
 
 
 @partial_trace.register(cupy.ndarray)
-def partial_trace_cupy(
-        rho: cupy.ndarray, retain_qubits) -> cupy.ndarray:
+def partial_trace_cupy(rho: cupy.ndarray, retain_qubits) -> cupy.ndarray:
     """
     Compute the partial trace of rho.
     Args:
@@ -265,7 +278,7 @@ def partial_trace_wf_cupy(iwf: cupy.ndarray, retain_qubits):
     nqb = int(math_log2(iwf.shape[0]))
     if len(retain_qubits) == nqb:
         return outer(iwf, iwf.conj())
-    iwf = iwf.reshape([2] * nqb, order='C')
+    iwf = iwf.reshape([2] * nqb, order="C")
     retain_qubits = sorted(retain_qubits)
     for idx in range(len(retain_qubits)):
         r = retain_qubits[idx]
@@ -288,18 +301,24 @@ def partial_trace_wf_keep_first_cupy(iwf: cupy.ndarray, n):
     m_idx = 2 ** m
     n_idx = 2 ** n
 
-    rho = zeros(shape=(n_idx, n_idx), dtype=default_dtype, order='C')
+    rho = zeros(shape=(n_idx, n_idx), dtype=default_dtype, order="C")
     # Here we simply use the threadDim for i, j in the cuda code.
     threads_per_bloch = 32
     threadDim = (threads_per_bloch, threads_per_bloch)
     x = (n_idx + (threads_per_bloch - 1)) // threads_per_bloch
     blockDim = (x, x)
     partial_trace_wf_keep_first_cuda(
-        grid=blockDim, block=threadDim, args=(
-            iwf, iwf_conj,
+        grid=blockDim,
+        block=threadDim,
+        args=(
+            iwf,
+            iwf_conj,
             rho,
-            m, m_idx, n_idx,
-        ))
+            m,
+            m_idx,
+            n_idx,
+        ),
+    )
     return rho
 
 
@@ -312,16 +331,18 @@ def trace_distance_cupy(target_rho, pred_rho) -> cupy.ndarray:
 
 
 @trace_distance_1qb.register(cupy.ndarray)
-def trace_distance_1qb_cupy(target_rho: cupy.ndarray,
-                            pred_rho: cupy.ndarray) -> cupy.ndarray:
+def trace_distance_1qb_cupy(
+    target_rho: cupy.ndarray, pred_rho: cupy.ndarray
+) -> cupy.ndarray:
     diff = target_rho - pred_rho
     a = diff[0, 0]
     b = diff[0, 1]
     c = diff[1, 1]
     b_conj = diff[1, 0]
     return 0.25 * (
-            abs(a + c - sqrt((a - c) ** 2 + 4 * b * b_conj)) +
-            abs(a + c + sqrt((a - c) ** 2 + 4 * b * b_conj)))
+        abs(a + c - sqrt((a - c) ** 2 + 4 * b * b_conj))
+        + abs(a + c + sqrt((a - c) ** 2 + 4 * b * b_conj))
+    )
 
 
 @trace_distance_using_svd.register(cupy.ndarray)
