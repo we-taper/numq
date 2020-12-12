@@ -2,3 +2,6 @@ flake8
 versioneer
 black
 pytest
+# Dependency for building documentation
+sphinx
+sphinx_rtd_theme
