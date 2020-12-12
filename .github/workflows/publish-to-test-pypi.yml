@@ -19,7 +19,7 @@ jobs:
     - name: Build a binary wheel and a source tarball
       run: |
         rm -rf dist/
-        pip install --upgrade twine
+        pip install --upgrade twine wheel
         python setup.py sdist bdist_wheel
         twine check dist/*
     - name: Publish distribution 📦 to Test PyPI
