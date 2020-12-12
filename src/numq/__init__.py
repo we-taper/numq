@@ -16,9 +16,12 @@ def _load_module(name):
     except KeyError:
         raise ValueError(f"Unregistered module {name}")
 
+# always load numpy implementation for convenience
+load_module('numpy')
 
 __all__ = [_ for _ in locals() if not _.startswith("")]
 
+# inserted by versioneer
 from ._version import get_versions
 
 __version__ = get_versions()["version"]
