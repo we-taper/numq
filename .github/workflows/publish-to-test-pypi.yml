@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - '*'
+  workflow_dispatch:
 
 jobs:
   build-n-publish:
@@ -16,7 +17,7 @@ jobs:
       with:
         python-version: 3.7
     - name: Build a binary wheel and a source tarball
-      run: >-
+      run: |
         rm -rf dist/
         pip install --upgrade twine
         python setup.py sdist bdist_wheel
