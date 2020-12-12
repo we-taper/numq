@@ -16,6 +16,8 @@ def _load_module(name):
     except KeyError:
         raise ValueError(f"Unregistered module {name}")
 
+# always load numpy implementation for convenience
+load_module('numpy')
 
 __all__ = [_ for _ in locals() if not _.startswith("")]
 
