@@ -1,9 +1,13 @@
+from typing import Union, Tuple, List
+
 import numpy as np
 import tensorflow as tf
 
 from ._base_function import *
 
 _tensor_types = [tf.Tensor, tf.SparseTensor, tf.Variable]
+
+__all__ = []
 
 
 def _register_as(abs_func):
@@ -48,6 +52,9 @@ def apply_kraus_ops_to_density_matrices_tf(kraus_ops, density_matrices):
     return tf.transpose(ret, perm=[1, 0, 2])
 
 
+__all__.append('apply_kraus_ops_to_density_matrices_tf')
+
+
 @_register_as(apply_unitary_transformation_to_density_matrices)
 def apply_unitary_transformation_to_density_matrices_tf(unitary, density_matrices):
     # with tf.variable_scope("apply_unitary_transformation_to_density_matrices"):
@@ -68,6 +75,9 @@ def apply_unitary_transformation_to_density_matrices_tf(unitary, density_matrice
     # B[i,nwf,k] U'[k,l] -> ret[i,nwf,l]
     ret = tf.tensordot(mat_b, tf.linalg.adjoint(unitary), axes=[[2], [0]])
     return tf.transpose(ret, perm=[1, 0, 2])
+
+
+__all__.append('apply_unitary_transformation_to_density_matrices_tf')
 
 
 @_register_as(load_state_into_mqb_start_from_lqb)
@@ -114,6 +124,9 @@ def load_state_into_mqb_start_from_lqb_tf(states: tf.Tensor, m: int, l: int = 0)
     return overall
 
 
+__all__.append('load_state_into_mqb_start_from_lqb_tf')
+
+
 @_register_as(load1qb_into_ithqb)
 def load1qb_into_ithqb_tf(iwf_1qb: tf.Tensor, target_qbidx: int, numphyqb: int):
     tfcpx_type = iwf_1qb.dtype
@@ -157,6 +170,9 @@ def load1qb_into_ithqb_tf(iwf_1qb: tf.Tensor, target_qbidx: int, numphyqb: int):
     return tf.transpose(owfs)
 
 
+__all__.append('load1qb_into_ithqb_tf')
+
+
 @_register_as(kron_each)
 def kron_each_tf(wf1s, wf2s):
     nwf = int(wf1s.shape[1])  # int to convert TensorFlow dimension into integer
@@ -174,6 +190,9 @@ def kron_each_tf(wf1s, wf2s):
     wf2s = wf2s[tf.newaxis, :, :]  # dummy, dim2, nwf
     ret = wf1s * wf2s  # broadcasted to (dim1, dim2, nwf)
     return tf.reshape(ret, shape=(dim1 * dim2, nwf))
+
+
+__all__.append('kron_each_tf')
 
 
 def kron_matrix_tf(mat1, mat2):
@@ -202,9 +221,15 @@ def kron_matrix_tf(mat1, mat2):
         return tf.reshape(mat1_rsh * mat2_rsh, [m1 * m2, n1 * n2])
 
 
+__all__.append('kron_matrix_tf')
+
+
 def kron_vector(a, b):
     # TODO: register this
     return kron_matrix_tf(tf.expand_dims(a, axis=1), tf.expand_dims(b, axis=1))
+
+
+__all__.append('kron_vector')
 
 
 @_register_as(make_density_matrix)
@@ -226,6 +251,9 @@ def make_density_matrix_tf(wf):
         return tf.convert_to_tensor(ret)
     else:
         raise NotImplementedError(wf.shape)
+
+
+__all__.append('make_density_matrix_tf')
 
 
 @_register_as(partial_trace_1d)
@@ -275,6 +303,9 @@ def partial_trace_1d_tf(rho, retain_qubit: int):
     return rho
 
 
+__all__.append('partial_trace_1d_tf')
+
+
 @_register_as(pure_state_overlap)
 def pure_state_overlap_tf(wf1, wf2):
     # with tf.variable_scope("pure_state_overlap"):
@@ -295,6 +326,9 @@ def pure_state_overlap_tf(wf1, wf2):
     raise ValueError(str(wf1.shape))
 
 
+__all__.append('pure_state_overlap_tf')
+
+
 @_register_as(trace_distance)
 def trace_distance_tf(target_rho, pred_rho):
     # with tf.variable_scope("trace_distance"):
@@ -309,6 +343,9 @@ def trace_distance_tf(target_rho, pred_rho):
         return 0.5 * tf.reduce_sum(tf.abs(tf.linalg.eigh(target_rho - pred_rho)[0]))
 
 
+__all__.append('trace_distance_tf')
+
+
 @_register_as(trace_distance_1qb)
 def trace_distance_1qb_tf(target_rho, pred_rho):
     # with tf.variable_scope("trace_distance"):
@@ -319,9 +356,12 @@ def trace_distance_1qb_tf(target_rho, pred_rho):
     c = diff[1, 1]
     b_conj = diff[1, 0]
     return 0.25 * (
-        tf.abs(a + c - tf.sqrt((a - c) ** 2 + 4 * b * b_conj))
-        + tf.abs(a + c + tf.sqrt((a - c) ** 2 + 4 * b * b_conj))
+            tf.abs(a + c - tf.sqrt((a - c) ** 2 + 4 * b * b_conj))
+            + tf.abs(a + c + tf.sqrt((a - c) ** 2 + 4 * b * b_conj))
     )
+
+
+__all__.append('trace_distance_1qb_tf')
 
 
 @_register_as(trace_distance_using_svd)
@@ -330,6 +370,9 @@ def trace_distance_using_svd_tf(target_rho, pred_rho):
     return 0.5 * tf.reduce_sum(
         tf.abs(tf.linalg.svd(target_rho - pred_rho, compute_uv=False))
     )
+
+
+__all__.append('trace_distance_using_svd_tf')
 
 
 def tensorflow_optimised_config():
@@ -342,6 +385,9 @@ def tensorflow_optimised_config():
         return config
     except AttributeError:
         raise NotImplementedError("Not implemented in TF v2")
+
+
+__all__.append('tensorflow_optimised_config')
 
 
 @_register_as(partial_trace_wf)
@@ -357,6 +403,36 @@ def partial_trace_wf_tf(iwf, retain_qubits):
     )
 
 
+__all__.append('partial_trace_wf_tf')
+
+
+def compute_trace_out_indices(nqb, retain_qubits: Union[List[int], Tuple[int, ...]]):
+    """Compute the required trace_out_indices for partial tracing
+    as in `partial_trace_wf_tf_autographable`."""
+    return tuple(i for i in range(0, nqb) if i not in retain_qubits)
+
+
+__all__.append('compute_trace_out_indices')
+
+
+def partial_trace_wf_tf_autographable(iwf, nqb: int, trace_out_indices: tuple, retain_qubits: tuple):
+    """Assuming iwf is a ragged tensor where
+    - the first dimension is the batch index
+    - the second dimension is the dimension of wavefunction. In some cases after a `tf.function` decoration,
+      the second dimension might be None.
+    """
+    iwf = tf.reshape(iwf, tf.tile([2], [nqb]))
+    iwf_conj = tf.math.conj(iwf)
+    out_shape0 = 2 ** len(retain_qubits)
+    return tf.reshape(
+        tf.tensordot(iwf, iwf_conj, axes=[trace_out_indices, trace_out_indices]),
+        (out_shape0, out_shape0),
+    )
+
+
+__all__.append('partial_trace_wf_tf_autographable')
+
+
 @_register_as(partial_trace)
 def partial_trace_tf(rho, retain_qubits):
     retain_qubits = sorted(list(retain_qubits))
@@ -365,10 +441,10 @@ def partial_trace_tf(rho, retain_qubits):
     address_to_trance_away = [x for x in range(nqb) if x not in retain_qubits]
 
     transpose_order = (
-        retain_qubits
-        + [x + nqb for x in retain_qubits]
-        + address_to_trance_away
-        + [x + nqb for x in address_to_trance_away]
+            retain_qubits
+            + [x + nqb for x in retain_qubits]
+            + address_to_trance_away
+            + [x + nqb for x in address_to_trance_away]
     )
 
     transposed_density_matrix = tf.transpose(rho, transpose_order)
@@ -382,3 +458,6 @@ def partial_trace_tf(rho, retain_qubits):
     return tf.reshape(
         tf.linalg.trace(transposed_density_matrix), (return_shape0, return_shape0)
     )
+
+
+__all__.append('partial_trace_tf')
