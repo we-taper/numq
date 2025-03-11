@@ -1,7 +1,8 @@
-# Install
+# X-Py routines for quantum computation
 
+This project accelerates the simulation of quantum circuits through two backends: NumPy for CPU, and CuPy for GPU (CUDA based).
 
-# Setup Cupy
+## Setup CuPy
 
 Prepare CUDA: `conda install -c anaconda cudatoolkit>=11.0`
 
