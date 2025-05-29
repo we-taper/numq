@@ -19,7 +19,7 @@ def _load_module(name):
 # always load numpy implementation for convenience
 load_module('numpy')
 
-__all__ = [_ for _ in locals() if not _.startswith("")]
+__all__ = [_ for _ in locals() if not _.startswith("_")]
 
 # inserted by versioneer
 from ._version import get_versions
