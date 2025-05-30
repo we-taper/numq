@@ -34,4 +34,4 @@ u = # your isometry
 rho_after_u = apply_isometry_to_density_matrices(u, rho)
 ```
 
-Detailed documentations for core routines are available at [todo].
+Detailed documentations for core routines are available at https://we-taper.github.io/numq/.
